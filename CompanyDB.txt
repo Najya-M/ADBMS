@@ -1,0 +1,247 @@
+CREATE DATABASE CompanyDB;
+
+USE CompanyDB;
+
+CREATE TABLE Employee (
+    empno INT PRIMARY KEY,
+    ename VARCHAR(30),
+    job VARCHAR(10),
+    managerid INT,
+    hiredate DATE,
+    salary INT,
+    commision INT,
+    deptno INT
+);
+
+DESCRIBE Employee;
+
+CREATE TABLE Department (
+    deptno INT PRIMARY KEY,
+    deptname VARCHAR(15),
+    location VARCHAR(10)
+);
+
+DESCRIBE Department;
+
+CREATE TABLE SalaryGrade (
+    grade INT PRIMARY KEY,
+    lowsalary INT,
+    highsalary INT
+);
+
+DESCRIBE SalaryGrade;
+
+
+exc-2
+
+-- Inserting into Department
+INSERT INTO Department (deptno, deptname, location) VALUES
+(10, 'Accounting', 'US'),
+(20, 'Research', 'US'),
+(30, 'Sales', 'US'),
+(40, 'Operations', 'US'),
+(50, 'HR', 'US');
+
+-- Inserting into SalaryGrade
+INSERT INTO SalaryGrade (grade, lowsalary, highsalary) VALUES
+(1, 700, 1200),
+(2, 1201, 1400),
+(3, 1401, 2000),
+(4, 2001, 3000),
+(5, 3001, 5000);
+
+-- Inserting into Employee
+INSERT INTO Employee (empno, ename, job, managerid, hiredate, salary, commision, deptno) VALUES
+(1001, 'SMITH', 'CLERK', 1003, '1987-12-17', 800, NULL, 20),
+(1002, 'ALLEN', 'SALESMAN', 1006, '1981-02-20', 1600, 300, 30),
+(1003, 'WARD', 'SALESMAN', 1006, '1981-02-22', 1250, 500, 30),
+(1004, 'JONES', 'MANAGER', 1009, '1981-04-02', 2975, NULL, 20),
+(1005, 'MARTIN', 'SALESMAN', 1006, '1981-09-28', 1250, 1400, 30),
+(1006, 'BLAKE', 'MANAGER', 1009, '1981-05-01', 2850, NULL, 30),
+(1007, 'CLARK', 'MANAGER', 1009, '1981-06-09', 2450, NULL, 10),
+(1008, 'KING', 'PRESIDENT', NULL, '1981-11-17', 5000, NULL, 10),
+(1009, 'TURNER', 'SALESMAN', 1006, '1981-09-08', 1500, 0, 30),
+(1010, 'JAMES', 'CLERK', 1006, '1981-12-03', 950, NULL, 30);
+
+
+SELECT * FROM Employee;
+SELECT * FROM Department;
+SELECT * FROM SalaryGrade;
+
+
+-- 4. Select empno, ename from table employee
+SELECT empno, ename FROM Employee;
+
+-- 5. List all employees having a salary range between 1000 and 2000
+SELECT * FROM Employee
+WHERE salary BETWEEN 1000 AND 2000;
+
+-- 6. List dname and department number in department name order
+SELECT deptname, deptno FROM Department
+ORDER BY deptname;
+
+-- 7. List the employee details in department 10 and 20
+SELECT * FROM Employee
+WHERE deptno IN (10, 20);
+
+-- 8. List names and jobs of all clerks in dept 20
+SELECT ename, job FROM Employee
+WHERE job = 'CLERK' AND deptno = 20;
+
+-- 9. Display all employee names which have TH or LL in name
+SELECT ename FROM Employee
+WHERE ename LIKE '%TH%' OR ename LIKE '%LL%';
+
+-- 10. List name, job, and salary of all employees who have a manager
+SELECT ename, job, salary FROM Employee
+WHERE managerid IS NOT NULL;
+
+-- 11. Display name and annual remuneration for all employees
+SELECT ename, (salary * 12 + IFNULL(commision, 0)) AS annual_remuneration
+FROM Employee;
+
+-- 12. Display all employees hired during 1987
+SELECT * FROM Employee
+WHERE YEAR(hiredate) = 1987;
+
+-- 13. Salespeople whose salary > commission, ordered by salary descending
+SELECT ename, job, (salary * 12) AS annual_salary, commision
+FROM Employee
+WHERE job = 'SALESMAN' AND salary > IFNULL(commision, 0)
+ORDER BY salary DESC;
+
+-- 14. List the employee name and salary increased by 12.5% (rounded)
+SELECT ename, ROUND(salary * 1.125) AS increased_salary
+FROM Employee;
+
+-- 15. Produce output: EMPLOYEE AND JOB (tabbed)
+SELECT 'EMPLOYEE AND JOB'
+UNION ALL
+SELECT CONCAT(ename, '\t\t', job) FROM Employee;
+
+-- 16. Produce output: EMPLOYEE AND JOB (with job in brackets)
+SELECT 'EMPLOYEE AND JOB'
+UNION ALL
+SELECT CONCAT(ename, '(', job, ')') FROM Employee;
+
+-- 17. Find the minimum, maximum, and average salaries of all employees
+SELECT MIN(salary) AS MinSalary,
+       MAX(salary) AS MaxSalary,
+       AVG(salary) AS AvgSalary
+FROM Employee;
+
+-- 18. List the minimum and maximum salary for each job
+SELECT job, MIN(salary) AS MinSalary, MAX(salary) AS MaxSalary
+FROM Employee
+GROUP BY job;
+
+-- 19. Find how many managers are there (without listing them)
+SELECT COUNT(*) AS NumManagers
+FROM Employee
+WHERE job = 'MANAGER';
+
+-- 20. Find the average salary and average total remuneration for each job
+SELECT job,
+       AVG(salary) AS AvgSalary,
+       AVG(salary + IFNULL(commision, 0)) AS AvgRemuneration
+FROM Employee
+GROUP BY job;
+
+-- 21. Find the difference between highest and lowest salaries
+SELECT MAX(salary) - MIN(salary) AS SalaryDifference
+FROM Employee;
+
+-- 22. Find all departments having more than 3 employees
+SELECT deptno, COUNT(*) AS NumEmployees
+FROM Employee
+GROUP BY deptno
+HAVING COUNT(*) > 3;
+
+-- 23. Check whether all employee numbers are unique
+SELECT empno, COUNT(*) AS count
+FROM Employee
+GROUP BY empno
+HAVING COUNT(*) > 1;
+-- If no rows returned, all empnos are unique ✅
+
+ecx-3
+
+-- 1. Display all employee names and their department names in department name order
+SELECT E.ename, D.deptname
+FROM Employee E
+JOIN Department D ON E.deptno = D.deptno
+ORDER BY D.deptname;
+
+-- 2. Display the name, location, and department name of all employees whose salary is more than 1500
+SELECT E.ename, D.location, D.deptname
+FROM Employee E
+JOIN Department D ON E.deptno = D.deptno
+WHERE E.salary > 1500;
+
+-- 3. Produce a list showing employee’s salary grade
+SELECT E.ename, E.salary, S.grade
+FROM Employee E
+JOIN SalaryGrade S ON E.salary BETWEEN S.lowsalary AND S.highsalary;
+
+-- 4. List employees in grade 3
+SELECT E.*
+FROM Employee E
+JOIN SalaryGrade S ON E.salary BETWEEN S.lowsalary AND S.highsalary
+WHERE S.grade = 3;
+
+-- 5. Show all employees in US
+SELECT E.*
+FROM Employee E
+JOIN Department D ON E.deptno = D.deptno
+WHERE D.location = 'US';
+
+-- 6. List employee name, job, salary, grade and department name for all except clerks. Sort on salary descending
+SELECT E.ename, E.job, E.salary, S.grade, D.deptname
+FROM Employee E
+JOIN Department D ON E.deptno = D.deptno
+JOIN SalaryGrade S ON E.salary BETWEEN S.lowsalary AND S.highsalary
+WHERE E.job <> 'CLERK'
+ORDER BY E.salary DESC;
+
+-- 7. List name, job, salary for employees earning 36000/year or who are clerks
+SELECT ename, job, salary
+FROM Employee
+WHERE (salary * 12 = 36000) OR job = 'CLERK';
+
+ecx-4
+
+-- 1. Display employees who earn more than the lowest salary in department 30
+SELECT * FROM Employee
+WHERE salary > (
+    SELECT MIN(salary)
+    FROM Employee
+    WHERE deptno = 30
+);
+
+-- 2. Find the employees who earn more than every employee in department 30
+SELECT * FROM Employee
+WHERE salary > ALL (
+    SELECT salary
+    FROM Employee
+    WHERE deptno = 30
+);
+
+-- 3. Find the job with the highest average salary
+SELECT job
+FROM Employee
+GROUP BY job
+ORDER BY AVG(salary) DESC
+LIMIT 1;
+
+-- 4. Find the departments not having any employees
+SELECT D.*
+FROM Department D
+LEFT JOIN Employee E ON D.deptno = E.deptno
+WHERE E.empno IS NULL;
+
+-- 5. Display the name and salary of the top three earners in the company
+SELECT ename, salary
+FROM Employee
+ORDER BY salary DESC
+LIMIT 3;
+
